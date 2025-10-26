@@ -20,7 +20,7 @@ if not firebase_admin._apps:
             # Si el archivo NO existe, cargamos desde st.secrets
             
             # 2. Cargar el secreto como un string de texto
-            cred_json_str = st.secrets["s"]
+            cred_json_str = st.secrets["firebase_service_account"]
             
             # 3. Convertir (parsear) el string de texto a un diccionario de Python
             cred_dict = json.loads(cred_json_str)
