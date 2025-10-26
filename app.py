@@ -4,10 +4,10 @@ from firebase_admin import credentials, firestore
 import pandas as pd
 import os
 import altair as alt # Importante para los gráficos
-import json # <--- 1. Importar la librería JSON
+# NO necesitamos importar 'json'
 
 # --- Conexión a Firebase (a prueba de despliegues) ---
-if not firebase_admin._apps:
+if not firebase_admin._apps: 
     try:
         if os.path.exists("service-account-key.json"):
             # --- MODO LOCAL ---
@@ -17,24 +17,19 @@ if not firebase_admin._apps:
             st.sidebar.success("Credencial local cargada 🔑", icon="🔑")
         else:
             # --- MODO NUBE (Streamlit Cloud) ---
-            # Si el archivo NO existe, cargamos desde st.secrets
+            # Carga la sección [firebase_service_account] de los secrets
+            # st.secrets["firebase_service_account"] ya devuelve un diccionario
+            cred_dict = st.secrets["firebase_service_account"]
             
-            # 2. Cargar el secreto como un string de texto
-            cred_json_str = st.secrets["firebase_service_account"]
-            
-            # 3. Convertir (parsear) el string de texto a un diccionario de Python
-            cred_dict = json.loads(cred_json_str)
-            
-            # 4. Usar el diccionario para crear la credencial
+            # Usar el diccionario para crear la credencial
             cred = credentials.Certificate(cred_dict)
             st.sidebar.success("Credencial de nube cargada ☁️", icon="☁️")
             
         firebase_admin.initialize_app(cred)
 
-
-    except json.JSONDecodeError as e:
-        st.error(f"Error al decodificar el JSON del secreto: {e}")
-        st.warning("🚨 ¡Asegúrate de haber copiado y pegado el contenido COMPLETO de 'service-account-key.json' en el secreto 's' de Streamlit!")
+    except KeyError: # Ocurre si la sección [firebase_service_account] no existe
+        st.error("Error: No se encontró la sección [firebase_service_account] en los secrets de Streamlit.")
+        st.warning("Asegúrate de haber pegado el bloque TOML de [firebase_service_account] en los 'Secrets' de tu app.")
         st.stop()
     except ValueError as e:
         st.error(f"Error al leer las credenciales: {e}")
